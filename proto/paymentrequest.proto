@@ -5,8 +5,8 @@
 // to avoid conflicts, register extensions via pull-req at
 // https://github.com/bitcoin/bips/blob/master/bip-0070/extensions.mediawiki
 //
-
-package payments;
+syntax = "proto2";
+package models;
 option java_package = "org.bitcoin.protocols.payments";
 option java_outer_classname = "Protos";
 
@@ -44,10 +44,3 @@ message PaymentACK {
         required Payment payment = 1;      // Payment message that triggered this ACK
         optional string memo = 2;          // human-readable message for customer
 }
-
-    © 2019 GitHub, Inc.
-    Terms
-    Privacy
-    Security
-    Status
-    Help
