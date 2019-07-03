@@ -1,0 +1,28 @@
+\documentclass{standalone}
+\usepackage{msc}
+\standaloneenv{msc}
+\begin{document}
+\drawframe{no}
+\setlength{\instdist}{5cm}
+\setlength{\instwidth}{2cm}
+\begin{msc}[c]{PUT Payment Protocol}
+    \declinst{A}{}{ User }
+    \declinst{B}{}{ Wallet }
+    \declinst{C}{}{ Server }
+    \declinst{D}{}{ Blockchain }
+    \mess{PUT key}{A}[.75]{C}
+    \nextlevel[2]
+    \mess{Payment Invoice}{C}{B}
+    \nextlevel[2]
+    \mess{Authorize?}{B}{A}
+    \nextlevel[2]
+    \mess{Confirmation}{A}{B}
+    \nextlevel[2]
+    \mess{Payment}{B}{C}
+    \nextlevel
+    \mess{Transaction}{B}[.75]{D}
+    \nextlevel[2]
+    \mess{PaymentAck, Token}{C}{B}
+    \nextlevel[2]
+\end{msc}
+\end{document}
