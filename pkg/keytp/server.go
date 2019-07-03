@@ -30,12 +30,11 @@ type Database interface {
 // New returns a HTTP-based keyserver that implements the REST api to handle keys
 func New(db Database) *HTTPKeyServer {
 	mux := chi.NewRouter()
-	server := HTTPKeyServer{
+	setupBaseMiddleware(mux)
+	server := &HTTPKeyServer{
 		mux: mux,
 		db:  db,
 	}
-
-	setupBaseMiddleware(mux)
 
 	mux.Route("/", func(r chi.Router) {
 		r.Get("/", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -48,8 +47,7 @@ func New(db Database) *HTTPKeyServer {
 		r.Put("/", server.setKey)
 		r.Get("/", server.getKey)
 	})
-
-	return &HTTPKeyServer{mux: mux}
+	return server
 }
 
 func setupBaseMiddleware(mux *chi.Mux) {
