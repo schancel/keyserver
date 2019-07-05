@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/cashweb/keyserver/pkg/models"
+	"github.com/cashweb/keyserver/pkg/payforput"
+
 	"github.com/rs/zerolog/hlog"
 	"github.com/rs/zerolog/log"
 
@@ -36,15 +38,19 @@ func New(db Database) *HTTPKeyServer {
 		db:  db,
 	}
 
+	enforcer := payforput.New("/payments", nil)
 	mux.Route("/", func(r chi.Router) {
 		r.Get("/", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 			res.Write([]byte("You have found a keytp server."))
 			req.Body.Close()
 		}))
+		// Install our payment enforcer at the appropriate path
+		r.Post(enforcer.PaymentURL, enforcer.PaymentHandler)
 	})
 
+	// Install our normal paths
 	mux.Route("/keys/{keyID}", func(r chi.Router) {
-		r.Put("/", server.setKey)
+		r.With(enforcer.Middleware).Put("/", server.setKey)
 		r.Get("/", server.getKey)
 	})
 	return server
