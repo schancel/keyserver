@@ -6,16 +6,13 @@ import (
 
 	"github.com/cashweb/keyserver/pkg/models"
 	"github.com/cashweb/keyserver/pkg/payforput"
+	"github.com/spf13/viper"
 
 	"github.com/rs/zerolog/hlog"
 	"github.com/rs/zerolog/log"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-)
-
-const (
-	serverPort = ":8080"
 )
 
 type HTTPKeyServer struct {
@@ -38,7 +35,7 @@ func New(db Database) *HTTPKeyServer {
 		db:  db,
 	}
 
-	enforcer := payforput.New("/payments", nil)
+	enforcer := payforput.New("/payments", viper.GetString("secret"), nil)
 	mux.Route("/", func(r chi.Router) {
 		r.Get("/", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 			res.Write([]byte("You have found a keytp server."))
@@ -76,6 +73,7 @@ func setupBaseMiddleware(mux *chi.Mux) {
 }
 
 // ListenAndServe listens and serves requests
-func (s *HTTPKeyServer) ListenAndServe() {
-	http.ListenAndServe(serverPort, s.mux)
+func (s *HTTPKeyServer) ListenAndServe() error {
+	serverPort := viper.GetString("bind")
+	return http.ListenAndServe(serverPort, s.mux)
 }
