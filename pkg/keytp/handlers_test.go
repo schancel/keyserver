@@ -30,7 +30,7 @@ func TestSetKey(t *testing.T) {
 	addrMetadata := &models.AddressMetadata{
 		PubKey: pubkey.SerializeUncompressed(),
 		Payload: &models.Payload{
-			Timestamp: time.Now().UnixNano(),
+			Timestamp: time.Now().Unix(),
 			Rows: []*models.MetadataField{
 				&models.MetadataField{
 					Headers: []*models.Header{
@@ -78,7 +78,7 @@ func TestGetKey(t *testing.T) {
 	addrMetadata := &models.AddressMetadata{
 		PubKey: pubkey.SerializeUncompressed(),
 		Payload: &models.Payload{
-			Timestamp: time.Now().UnixNano(),
+			Timestamp: time.Now().Unix(),
 			Rows: []*models.MetadataField{
 				&models.MetadataField{
 					Headers: []*models.Header{
