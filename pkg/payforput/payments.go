@@ -33,11 +33,11 @@ type PaymentEnforcer struct {
 
 // New returns a new payment enforcer that can be used for easy BIP70 integration
 // for the keyserver.
-func New(PaymentURL string, Validator ValidatorFunc) *PaymentEnforcer {
+func New(PaymentURL string, secret string, Validator ValidatorFunc) *PaymentEnforcer {
 	pe := &PaymentEnforcer{
 		PaymentURL: PaymentURL,
 		Validator:  Validator,
-		Secret:     "",
+		Secret:     secret,
 	}
 	if pe.Validator == nil {
 		pe.Validator = DefaultValidator

@@ -20,7 +20,7 @@ func TestEnforcer(t *testing.T) {
 	keyPath := "/keys/foo"
 
 	// Create our enforcer middleware, and its endpoint
-	enforcer := New("/payments", DefaultValidator)
+	enforcer := New("/payments", "notasecret", DefaultValidator)
 	assert.NotNil(enforcer)
 
 	///////
