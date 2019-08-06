@@ -94,6 +94,10 @@ func (db *KeyDB) Set(keyAddress string, metadata *models.AddressMetadata) error 
 		return ErrOutdatedValue
 	}
 
+	if metadata.GetPayload().GetTimestamp()+metadata.GetPayload().GetTTL() < time.Now().Unix() {
+		return ErrExpiredTTL
+	}
+
 	// TODO: Ensure we're not re-adding keys that are older than the GC interval.
 
 	pubKey, err := bchec.ParsePubKey(rawPubKey, bchec.S256())
@@ -148,7 +152,15 @@ func (db *KeyDB) Get(keyAddress string) (*models.AddressMetadata, error) {
 		}
 
 		err := proto.Unmarshal(rawMetadata, metadata)
-		return err
+		if err != nil {
+			return err
+		}
+
+		if metadata.GetPayload().GetTimestamp()+metadata.GetPayload().GetTTL() < time.Now().Unix() {
+			return ErrExpiredTTL
+		}
+
+		return nil
 	})
 	return metadata, err
 }
