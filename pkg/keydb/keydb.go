@@ -3,7 +3,6 @@ package keydb
 import (
 	"bytes"
 	"crypto/sha256"
-	"fmt"
 	"time"
 
 	"github.com/cashweb/keyserver/pkg/models"
@@ -19,6 +18,17 @@ import (
 
 // Bucket namespace.  This is UTF-8 for "addressMetadata"
 var addressMetadataBucket = []byte{0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61}
+
+var (
+	// ErrExpiredTTL indicates the key has expired
+	ErrExpiredTTL = errors.New("Key has expired")
+	// ErrOutdatedValue indicates the timestamp is less than the currently known timestamp
+	ErrOutdatedValue = errors.New("outdated value attempting to be used as an update")
+	// ErrPubkeyDoesNotMatch specified pubkey does not match provided addreess
+	ErrPubkeyDoesNotMatch = errors.New("pubKey does not match address")
+	// ErrSignatureMismatch indicates an invalid signature specified for the payload
+	ErrSignatureMismatch = errors.New("Signature does match")
+)
 
 // Config is the configuration for creating a new keyDb instance
 type Config struct {
@@ -74,14 +84,14 @@ func (db *KeyDB) Set(keyAddress string, metadata *models.AddressMetadata) error 
 	rawPubKey := metadata.GetPubKey()
 	computedHash := bchutil.Hash160(rawPubKey)
 	if !bytes.Equal(computedHash, keyHash) {
-		return fmt.Errorf("pubKey does not match address: %q != %q", computedHash, keyHash)
+		return ErrPubkeyDoesNotMatch
 	}
 
 	// Check to make sure this is actually an update and not someone resubmitting an old
 	// value
 	oldValue, err := db.Get(keyAddress)
 	if err == nil && oldValue.GetPayload().GetTimestamp() > metadata.Payload.GetTimestamp() {
-		return errors.New("outdated value attempting to be used as an update")
+		return ErrOutdatedValue
 	}
 
 	// TODO: Ensure we're not re-adding keys that are older than the GC interval.
@@ -108,7 +118,7 @@ func (db *KeyDB) Set(keyAddress string, metadata *models.AddressMetadata) error 
 	}
 	// Verify the signature against the SHA256 of the message
 	if !sig.Verify(msgHash[:], pubKey) {
-		return errors.New("Signature does match")
+		return ErrSignatureMismatch
 	}
 
 	return db.db.Update(func(tx *bbolt.Tx) error {
