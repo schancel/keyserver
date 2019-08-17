@@ -94,7 +94,7 @@ func (db *KeyDB) Set(keyAddress string, metadata *models.AddressMetadata) error 
 		return ErrOutdatedValue
 	}
 
-	if metadata.GetPayload().GetTimestamp()+metadata.GetPayload().GetTTL() < time.Now().Unix() {
+	if metadata.GetPayload().GetTimestamp()+metadata.GetPayload().GetTtl() < time.Now().Unix() {
 		return ErrExpiredTTL
 	}
 
@@ -156,7 +156,7 @@ func (db *KeyDB) Get(keyAddress string) (*models.AddressMetadata, error) {
 			return err
 		}
 
-		if metadata.GetPayload().GetTimestamp()+metadata.GetPayload().GetTTL() < time.Now().Unix() {
+		if metadata.GetPayload().GetTimestamp()+metadata.GetPayload().GetTtl() < time.Now().Unix() {
 			return ErrExpiredTTL
 		}
 
