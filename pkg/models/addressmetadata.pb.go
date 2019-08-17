@@ -20,6 +20,31 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+// Specifies the revocation method
+type RevocationMethod int32
+
+const (
+	// If any of the pubkeys given in commitment_data[..n-1] signs
+	//data commitment_data[n] then revocation is granted.
+	RevocationMethod_BackupPubkey RevocationMethod = 0
+)
+
+var RevocationMethod_name = map[int32]string{
+	0: "BackupPubkey",
+}
+
+var RevocationMethod_value = map[string]int32{
+	"BackupPubkey": 0,
+}
+
+func (x RevocationMethod) String() string {
+	return proto.EnumName(RevocationMethod_name, int32(x))
+}
+
+func (RevocationMethod) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_0e2f0794313d73e1, []int{0}
+}
+
 // Signature scheme provided.  Default is Schnorr, but can be ecdsa.
 type AddressMetadata_SignatureScheme int32
 
@@ -43,55 +68,142 @@ func (x AddressMetadata_SignatureScheme) String() string {
 }
 
 func (AddressMetadata_SignatureScheme) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_0e2f0794313d73e1, []int{3, 0}
+	return fileDescriptor_0e2f0794313d73e1, []int{5, 0}
 }
 
-// Basic key/value used to store header data.
-type Header struct {
-	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Value                string   `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+// Message sent to server to revoke a key
+type Revocation struct {
+	// The revocation method
+	Method RevocationMethod `protobuf:"varint,1,opt,name=method,proto3,enum=models.RevocationMethod" json:"method,omitempty"`
+	// Data associated with the reveal phase
+	RevealData [][]byte `protobuf:"bytes,2,rep,name=reveal_data,json=revealData,proto3" json:"reveal_data,omitempty"`
+	// New key to redirect to
+	PubKeyHash []byte `protobuf:"bytes,3,opt,name=pub_key_hash,json=pubKeyHash,proto3" json:"pub_key_hash,omitempty"`
+	// Memo attached to revocation
+	Memo                 string   `protobuf:"bytes,4,opt,name=memo,proto3" json:"memo,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Header) Reset()         { *m = Header{} }
-func (m *Header) String() string { return proto.CompactTextString(m) }
-func (*Header) ProtoMessage()    {}
-func (*Header) Descriptor() ([]byte, []int) {
+func (m *Revocation) Reset()         { *m = Revocation{} }
+func (m *Revocation) String() string { return proto.CompactTextString(m) }
+func (*Revocation) ProtoMessage()    {}
+func (*Revocation) Descriptor() ([]byte, []int) {
 	return fileDescriptor_0e2f0794313d73e1, []int{0}
 }
 
-func (m *Header) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Header.Unmarshal(m, b)
+func (m *Revocation) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Revocation.Unmarshal(m, b)
 }
-func (m *Header) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Header.Marshal(b, m, deterministic)
+func (m *Revocation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Revocation.Marshal(b, m, deterministic)
 }
-func (m *Header) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Header.Merge(m, src)
+func (m *Revocation) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Revocation.Merge(m, src)
 }
-func (m *Header) XXX_Size() int {
-	return xxx_messageInfo_Header.Size(m)
+func (m *Revocation) XXX_Size() int {
+	return xxx_messageInfo_Revocation.Size(m)
 }
-func (m *Header) XXX_DiscardUnknown() {
-	xxx_messageInfo_Header.DiscardUnknown(m)
+func (m *Revocation) XXX_DiscardUnknown() {
+	xxx_messageInfo_Revocation.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Header proto.InternalMessageInfo
+var xxx_messageInfo_Revocation proto.InternalMessageInfo
 
-func (m *Header) GetName() string {
+func (m *Revocation) GetMethod() RevocationMethod {
 	if m != nil {
-		return m.Name
+		return m.Method
+	}
+	return RevocationMethod_BackupPubkey
+}
+
+func (m *Revocation) GetRevealData() [][]byte {
+	if m != nil {
+		return m.RevealData
+	}
+	return nil
+}
+
+func (m *Revocation) GetPubKeyHash() []byte {
+	if m != nil {
+		return m.PubKeyHash
+	}
+	return nil
+}
+
+func (m *Revocation) GetMemo() string {
+	if m != nil {
+		return m.Memo
 	}
 	return ""
 }
 
-func (m *Header) GetValue() string {
+// A RevocationClause defines conditions under which the a key can be revoked.
+type RevocationClause struct {
+	// The revocation method
+	Method RevocationMethod `protobuf:"varint,1,opt,name=method,proto3,enum=models.RevocationMethod" json:"method,omitempty"`
+	// Data associated with commitment phase
+	CommitmentData [][]byte `protobuf:"bytes,2,rep,name=commitment_data,json=commitmentData,proto3" json:"commitment_data,omitempty"`
+	// Time period in which revocation is permitted
+	ValidFrom            int64    `protobuf:"varint,3,opt,name=valid_from,json=validFrom,proto3" json:"valid_from,omitempty"`
+	ValidUntil           int64    `protobuf:"varint,4,opt,name=valid_until,json=validUntil,proto3" json:"valid_until,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *RevocationClause) Reset()         { *m = RevocationClause{} }
+func (m *RevocationClause) String() string { return proto.CompactTextString(m) }
+func (*RevocationClause) ProtoMessage()    {}
+func (*RevocationClause) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0e2f0794313d73e1, []int{1}
+}
+
+func (m *RevocationClause) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RevocationClause.Unmarshal(m, b)
+}
+func (m *RevocationClause) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RevocationClause.Marshal(b, m, deterministic)
+}
+func (m *RevocationClause) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RevocationClause.Merge(m, src)
+}
+func (m *RevocationClause) XXX_Size() int {
+	return xxx_messageInfo_RevocationClause.Size(m)
+}
+func (m *RevocationClause) XXX_DiscardUnknown() {
+	xxx_messageInfo_RevocationClause.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RevocationClause proto.InternalMessageInfo
+
+func (m *RevocationClause) GetMethod() RevocationMethod {
 	if m != nil {
-		return m.Value
+		return m.Method
 	}
-	return ""
+	return RevocationMethod_BackupPubkey
+}
+
+func (m *RevocationClause) GetCommitmentData() [][]byte {
+	if m != nil {
+		return m.CommitmentData
+	}
+	return nil
+}
+
+func (m *RevocationClause) GetValidFrom() int64 {
+	if m != nil {
+		return m.ValidFrom
+	}
+	return 0
+}
+
+func (m *RevocationClause) GetValidUntil() int64 {
+	if m != nil {
+		return m.ValidUntil
+	}
+	return 0
 }
 
 // MetadataField is an indidual piece of structured data provided by wallet authors.
@@ -109,7 +221,7 @@ func (m *MetadataField) Reset()         { *m = MetadataField{} }
 func (m *MetadataField) String() string { return proto.CompactTextString(m) }
 func (*MetadataField) ProtoMessage()    {}
 func (*MetadataField) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0e2f0794313d73e1, []int{1}
+	return fileDescriptor_0e2f0794313d73e1, []int{2}
 }
 
 func (m *MetadataField) XXX_Unmarshal(b []byte) error {
@@ -144,6 +256,54 @@ func (m *MetadataField) GetMetadata() []byte {
 	return nil
 }
 
+// Basic key/value used to store header data.
+type Header struct {
+	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Value                string   `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Header) Reset()         { *m = Header{} }
+func (m *Header) String() string { return proto.CompactTextString(m) }
+func (*Header) ProtoMessage()    {}
+func (*Header) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0e2f0794313d73e1, []int{3}
+}
+
+func (m *Header) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Header.Unmarshal(m, b)
+}
+func (m *Header) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Header.Marshal(b, m, deterministic)
+}
+func (m *Header) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Header.Merge(m, src)
+}
+func (m *Header) XXX_Size() int {
+	return xxx_messageInfo_Header.Size(m)
+}
+func (m *Header) XXX_DiscardUnknown() {
+	xxx_messageInfo_Header.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Header proto.InternalMessageInfo
+
+func (m *Header) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *Header) GetValue() string {
+	if m != nil {
+		return m.Value
+	}
+	return ""
+}
+
 // Payload is the user-specified data section of a AddressMetadata that is covered by the users signature.
 type Payload struct {
 	// Timestamp allows servers to determine which version of the data is the most recent.
@@ -151,17 +311,19 @@ type Payload struct {
 	// TTL tells us how long this entry should exist before being considered invalid.
 	Ttl int64 `protobuf:"varint,2,opt,name=ttl,proto3" json:"ttl,omitempty"`
 	// User specified data.  Presumably some conventional data determined by wallet authors.
-	Rows                 []*MetadataField `protobuf:"bytes,3,rep,name=rows,proto3" json:"rows,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
-	XXX_unrecognized     []byte           `json:"-"`
-	XXX_sizecache        int32            `json:"-"`
+	Rows []*MetadataField `protobuf:"bytes,3,rep,name=rows,proto3" json:"rows,omitempty"`
+	// Set of clauses under which the key may be revoked
+	RevocationClauses    []*RevocationClause `protobuf:"bytes,4,rep,name=revocation_clauses,json=revocationClauses,proto3" json:"revocation_clauses,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
+	XXX_unrecognized     []byte              `json:"-"`
+	XXX_sizecache        int32               `json:"-"`
 }
 
 func (m *Payload) Reset()         { *m = Payload{} }
 func (m *Payload) String() string { return proto.CompactTextString(m) }
 func (*Payload) ProtoMessage()    {}
 func (*Payload) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0e2f0794313d73e1, []int{2}
+	return fileDescriptor_0e2f0794313d73e1, []int{4}
 }
 
 func (m *Payload) XXX_Unmarshal(b []byte) error {
@@ -203,6 +365,13 @@ func (m *Payload) GetRows() []*MetadataField {
 	return nil
 }
 
+func (m *Payload) GetRevocationClauses() []*RevocationClause {
+	if m != nil {
+		return m.RevocationClauses
+	}
+	return nil
+}
+
 // AddressMetadata is the basic unit of the keyserver.  It is used in both PUT and GET requests.
 type AddressMetadata struct {
 	// Serialized version of the XPubKey.  The *hash* of this XPub should correspond to the `key` in the kv store.
@@ -221,7 +390,7 @@ func (m *AddressMetadata) Reset()         { *m = AddressMetadata{} }
 func (m *AddressMetadata) String() string { return proto.CompactTextString(m) }
 func (*AddressMetadata) ProtoMessage()    {}
 func (*AddressMetadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0e2f0794313d73e1, []int{3}
+	return fileDescriptor_0e2f0794313d73e1, []int{5}
 }
 
 func (m *AddressMetadata) XXX_Unmarshal(b []byte) error {
@@ -271,9 +440,12 @@ func (m *AddressMetadata) GetPayload() *Payload {
 }
 
 func init() {
+	proto.RegisterEnum("models.RevocationMethod", RevocationMethod_name, RevocationMethod_value)
 	proto.RegisterEnum("models.AddressMetadata_SignatureScheme", AddressMetadata_SignatureScheme_name, AddressMetadata_SignatureScheme_value)
-	proto.RegisterType((*Header)(nil), "models.Header")
+	proto.RegisterType((*Revocation)(nil), "models.Revocation")
+	proto.RegisterType((*RevocationClause)(nil), "models.RevocationClause")
 	proto.RegisterType((*MetadataField)(nil), "models.MetadataField")
+	proto.RegisterType((*Header)(nil), "models.Header")
 	proto.RegisterType((*Payload)(nil), "models.Payload")
 	proto.RegisterType((*AddressMetadata)(nil), "models.AddressMetadata")
 }
@@ -281,26 +453,38 @@ func init() {
 func init() { proto.RegisterFile("addressmetadata.proto", fileDescriptor_0e2f0794313d73e1) }
 
 var fileDescriptor_0e2f0794313d73e1 = []byte{
-	// 323 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x5c, 0x91, 0xcd, 0x4e, 0xc2, 0x40,
-	0x10, 0xc7, 0x5d, 0x0b, 0xad, 0x0c, 0x08, 0x64, 0x22, 0xb1, 0x31, 0x1e, 0x9a, 0x5e, 0x2c, 0x97,
-	0x1e, 0xea, 0x03, 0x18, 0x82, 0x1a, 0x12, 0xe3, 0x47, 0xb6, 0xf1, 0x6c, 0x16, 0x77, 0x22, 0xc4,
-	0x96, 0x36, 0xdd, 0xad, 0x86, 0xa7, 0xf5, 0x55, 0x0c, 0xdb, 0xae, 0x44, 0x6e, 0xf3, 0xf9, 0xfb,
-	0xff, 0x77, 0x16, 0x26, 0x42, 0xca, 0x8a, 0x94, 0xca, 0x49, 0x0b, 0x29, 0xb4, 0x88, 0xcb, 0xaa,
-	0xd0, 0x05, 0xba, 0x79, 0x21, 0x29, 0x53, 0x61, 0x02, 0xee, 0x82, 0x84, 0xa4, 0x0a, 0x11, 0x3a,
-	0x1b, 0x91, 0x93, 0xcf, 0x02, 0x16, 0xf5, 0xb8, 0x89, 0xf1, 0x0c, 0xba, 0x5f, 0x22, 0xab, 0xc9,
-	0x3f, 0x36, 0xc5, 0x26, 0x09, 0x5f, 0xe1, 0xf4, 0xb1, 0xa5, 0xdd, 0xaf, 0x29, 0x93, 0x18, 0x81,
-	0xb7, 0x32, 0x10, 0xe5, 0xb3, 0xc0, 0x89, 0xfa, 0xc9, 0x30, 0x6e, 0xf0, 0x71, 0xc3, 0xe6, 0xb6,
-	0x8d, 0x17, 0x70, 0x62, 0x8d, 0x18, 0xe6, 0x80, 0xff, 0xe5, 0xa1, 0x04, 0xef, 0x45, 0x6c, 0xb3,
-	0x42, 0x48, 0xbc, 0x84, 0x9e, 0x5e, 0xe7, 0xa4, 0xb4, 0xc8, 0x4b, 0x63, 0xc8, 0xe1, 0xfb, 0x02,
-	0x8e, 0xc1, 0xd1, 0x3a, 0x33, 0xfb, 0x0e, 0xdf, 0x85, 0x38, 0x85, 0x4e, 0x55, 0x7c, 0x2b, 0xdf,
-	0x31, 0xea, 0x13, 0xab, 0xfe, 0xcf, 0x25, 0x37, 0x23, 0xe1, 0x0f, 0x83, 0xd1, 0xac, 0x39, 0x89,
-	0x6d, 0xe3, 0x39, 0x78, 0x65, 0xbd, 0x7c, 0xfb, 0xa4, 0xad, 0x11, 0x1b, 0x70, 0xb7, 0xac, 0x97,
-	0x0f, 0xb4, 0xdd, 0xf9, 0x50, 0xeb, 0x8f, 0x8d, 0xd0, 0x75, 0x45, 0xad, 0xdf, 0x7d, 0x01, 0x6f,
-	0xc0, 0x55, 0xef, 0x2b, 0xca, 0xc9, 0x77, 0x02, 0x16, 0x0d, 0x93, 0x2b, 0xab, 0x7b, 0xc0, 0x8f,
-	0x53, 0xbb, 0x92, 0x9a, 0x71, 0xde, 0xae, 0xe1, 0x14, 0xbc, 0xb2, 0x79, 0xb1, 0xdf, 0x09, 0x58,
-	0xd4, 0x4f, 0x46, 0x96, 0xd0, 0x1e, 0x82, 0xdb, 0x7e, 0x38, 0x85, 0xd1, 0x01, 0x05, 0xfb, 0xe0,
-	0xa5, 0xf3, 0xc5, 0xd3, 0x33, 0xe7, 0xe3, 0x23, 0xec, 0x41, 0xf7, 0x6e, 0x7e, 0x9b, 0xce, 0xc6,
-	0x6c, 0xe9, 0x9a, 0x1f, 0xbe, 0xfe, 0x0d, 0x00, 0x00, 0xff, 0xff, 0xff, 0xc0, 0x67, 0x6e, 0xfa,
-	0x01, 0x00, 0x00,
+	// 521 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x53, 0x51, 0x6e, 0xd3, 0x40,
+	0x10, 0xad, 0xeb, 0xd4, 0xc1, 0x93, 0x90, 0x98, 0x15, 0x15, 0x16, 0x02, 0x61, 0x59, 0x48, 0x4d,
+	0xf8, 0x88, 0x50, 0x38, 0x00, 0x2a, 0x29, 0x25, 0x12, 0x2a, 0x54, 0x1b, 0xf5, 0x3b, 0xda, 0xc4,
+	0x03, 0xb6, 0xe2, 0xcd, 0x5a, 0xde, 0x75, 0x50, 0x0e, 0xc2, 0x31, 0x38, 0x13, 0x57, 0x41, 0x9e,
+	0xb5, 0x9b, 0x12, 0xf1, 0xc5, 0xdf, 0xfa, 0xed, 0x7b, 0xb3, 0x6f, 0xde, 0x8c, 0xe1, 0x5c, 0x24,
+	0x49, 0x89, 0x5a, 0x4b, 0x34, 0x22, 0x11, 0x46, 0x4c, 0x8a, 0x52, 0x19, 0xc5, 0x3c, 0xa9, 0x12,
+	0xcc, 0x75, 0xfc, 0xd3, 0x01, 0xe0, 0xb8, 0x53, 0x6b, 0x61, 0x32, 0xb5, 0x65, 0x6f, 0xc1, 0x93,
+	0x68, 0x52, 0x95, 0x84, 0x4e, 0xe4, 0x8c, 0x06, 0xd3, 0x70, 0x62, 0x79, 0x93, 0x03, 0xe7, 0x86,
+	0xee, 0x79, 0xc3, 0x63, 0xaf, 0xa0, 0x57, 0xe2, 0x0e, 0x45, 0xbe, 0xac, 0xab, 0x87, 0xa7, 0x91,
+	0x3b, 0xea, 0x73, 0xb0, 0xd0, 0x95, 0x30, 0x82, 0x45, 0xd0, 0x2f, 0xaa, 0xd5, 0x72, 0x83, 0xfb,
+	0x65, 0x2a, 0x74, 0x1a, 0xba, 0x91, 0x53, 0x33, 0x8a, 0x6a, 0xf5, 0x19, 0xf7, 0x73, 0xa1, 0x53,
+	0xc6, 0xa0, 0x23, 0x51, 0xaa, 0xb0, 0x13, 0x39, 0x23, 0x9f, 0xd3, 0x39, 0xfe, 0xe5, 0x40, 0x70,
+	0x78, 0x73, 0x96, 0x8b, 0x4a, 0xe3, 0x7f, 0xb8, 0xbb, 0x80, 0xe1, 0x5a, 0x49, 0x99, 0x19, 0x89,
+	0x5b, 0xf3, 0xd0, 0xe1, 0xe0, 0x00, 0x93, 0xcb, 0x97, 0x00, 0x3b, 0x91, 0x67, 0xc9, 0xf2, 0x5b,
+	0xa9, 0x24, 0x79, 0x74, 0xb9, 0x4f, 0xc8, 0x75, 0xa9, 0x64, 0xdd, 0xa5, 0xbd, 0xae, 0xb6, 0x26,
+	0xcb, 0xc9, 0xa9, 0xcb, 0xad, 0xe2, 0xae, 0x46, 0xe2, 0x3b, 0x78, 0x7c, 0xd3, 0x24, 0x7c, 0x9d,
+	0x61, 0x9e, 0xb0, 0x11, 0x74, 0x53, 0x14, 0x09, 0x96, 0x3a, 0x74, 0x22, 0x77, 0xd4, 0x9b, 0x0e,
+	0x5a, 0xb3, 0x73, 0x82, 0x79, 0x7b, 0xcd, 0x9e, 0xc3, 0xa3, 0x76, 0x38, 0xe1, 0x29, 0x85, 0x73,
+	0xff, 0x1d, 0x4f, 0xc1, 0xb3, 0xf4, 0x3a, 0xa4, 0xad, 0x90, 0x48, 0x9d, 0xfb, 0x9c, 0xce, 0xec,
+	0x29, 0x9c, 0xed, 0x44, 0x5e, 0x21, 0xc9, 0x7c, 0x6e, 0x3f, 0xea, 0xe8, 0xba, 0xb7, 0x62, 0x9f,
+	0x2b, 0x91, 0xb0, 0x17, 0xe0, 0x9b, 0x4c, 0xa2, 0x36, 0x42, 0x16, 0x24, 0x75, 0xf9, 0x01, 0x60,
+	0x01, 0xb8, 0xc6, 0xe4, 0xa4, 0x76, 0x79, 0x7d, 0x64, 0x63, 0xe8, 0x94, 0xea, 0x87, 0x0e, 0x5d,
+	0xb2, 0x7c, 0xde, 0x5a, 0xfe, 0xab, 0x35, 0x4e, 0x14, 0xf6, 0x09, 0x58, 0x79, 0x1f, 0xfb, 0x72,
+	0x4d, 0x13, 0xd2, 0x61, 0x87, 0x84, 0xff, 0x18, 0x8c, 0x1d, 0x21, 0x7f, 0x52, 0x1e, 0x21, 0x3a,
+	0xfe, 0xed, 0xc0, 0xf0, 0xd2, 0x2e, 0x69, 0xfb, 0x0e, 0x7b, 0x06, 0xdd, 0x66, 0x69, 0xc8, 0x75,
+	0x9f, 0x7b, 0x76, 0x5f, 0xea, 0x86, 0x74, 0xf6, 0x7d, 0x2b, 0x4c, 0x55, 0x62, 0x93, 0xd6, 0x01,
+	0x60, 0xef, 0xc1, 0xd3, 0xeb, 0x14, 0x25, 0xd2, 0x04, 0x07, 0xd3, 0x8b, 0xd6, 0xc7, 0x51, 0xfd,
+	0xc9, 0xa2, 0x95, 0x2c, 0x88, 0xce, 0x1b, 0x19, 0x1b, 0x43, 0xb7, 0xb0, 0xd1, 0xd1, 0x8c, 0x7b,
+	0xd3, 0x61, 0x5b, 0xa1, 0x49, 0x94, 0xb7, 0xf7, 0xf1, 0x18, 0x86, 0x47, 0x55, 0x58, 0x0f, 0xba,
+	0x8b, 0xd9, 0xfc, 0xcb, 0x57, 0xce, 0x83, 0x13, 0xe6, 0xc3, 0xd9, 0xc7, 0xd9, 0xd5, 0xe2, 0x32,
+	0x70, 0xde, 0xbc, 0x7e, 0xb8, 0xcb, 0x76, 0x43, 0x59, 0x00, 0xfd, 0x0f, 0x62, 0xbd, 0xa9, 0x8a,
+	0xdb, 0x6a, 0xb5, 0xc1, 0x7d, 0x70, 0xb2, 0xf2, 0xe8, 0xcf, 0x7c, 0xf7, 0x27, 0x00, 0x00, 0xff,
+	0xff, 0xae, 0x72, 0xdc, 0xf3, 0xb2, 0x03, 0x00, 0x00,
 }

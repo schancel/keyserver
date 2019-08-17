@@ -1,10 +1,34 @@
 syntax = "proto3";
 package models;
 
-// Basic key/value used to store header data.
-message Header {
-    string name = 1;
-    string value = 2;
+// Specifies the revocation method
+enum RevocationMethod {
+    /* If any of the pubkeys given in commitment_data[..n-1] signs
+    data commitment_data[n] then revocation is granted. */
+    BackupPubkey = 0;
+}
+
+// Message sent to server to revoke a key
+message Revocation {
+    // The revocation method
+    RevocationMethod method = 1;
+    // Data associated with the reveal phase
+    repeated bytes reveal_data = 2;
+    // New key to redirect to
+    bytes pub_key_hash = 3;
+    // Memo attached to revocation
+    string memo = 4;
+}
+
+// A RevocationClause defines conditions under which the a key can be revoked.
+message RevocationClause {
+    // The revocation method
+    RevocationMethod method = 1;
+    // Data associated with commitment phase
+    repeated bytes commitment_data = 2;
+    // Time period in which revocation is permitted
+    int64 valid_from = 3;
+    int64 valid_until = 4;
 }
 
 // MetadataField is an indidual piece of structured data provided by wallet authors.
@@ -15,6 +39,12 @@ message MetadataField {
     bytes metadata = 2;
 }
 
+// Basic key/value used to store header data.
+message Header {
+    string name = 1;
+    string value = 2;
+}
+
 // Payload is the user-specified data section of a AddressMetadata that is covered by the users signature.
 message Payload {
     // Timestamp allows servers to determine which version of the data is the most recent.
@@ -23,6 +53,8 @@ message Payload {
     int64 ttl = 2;
     // User specified data.  Presumably some conventional data determined by wallet authors.
     repeated MetadataField rows = 3;
+    // Set of clauses under which the key may be revoked
+    repeated RevocationClause revocation_clauses = 4;
 }
 
 // AddressMetadata is the basic unit of the keyserver.  It is used in both PUT and GET requests.
