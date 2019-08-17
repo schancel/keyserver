@@ -111,8 +111,8 @@ func (db *KeyDB) Set(keyAddress string, metadata *models.AddressMetadata) error 
 	}
 	msgHash := sha256.Sum256(rawPayload)
 	var sig *bchec.Signature
-	switch metadata.GetType() {
-	case models.AddressMetadata_Schnorr:
+	switch metadata.GetScheme() {
+	case models.AddressMetadata_SCHNORR:
 		sig, err = bchec.ParseSchnorrSignature(metadata.GetSignature())
 	case models.AddressMetadata_ECDSA:
 		sig, err = bchec.ParseDERSignature(metadata.GetSignature(), bchec.S256())
