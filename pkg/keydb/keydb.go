@@ -94,6 +94,10 @@ func (db *KeyDB) Set(keyAddress string, metadata *models.AddressMetadata) error 
 		return ErrOutdatedValue
 	}
 
+	if checkTTL(metadata, time.Now()) {
+		return ErrExpiredTTL
+	}
+
 	// TODO: Ensure we're not re-adding keys that are older than the GC interval.
 
 	pubKey, err := bchec.ParsePubKey(rawPubKey, bchec.S256())
@@ -148,7 +152,15 @@ func (db *KeyDB) Get(keyAddress string) (*models.AddressMetadata, error) {
 		}
 
 		err := proto.Unmarshal(rawMetadata, metadata)
-		return err
+		if err != nil {
+			return err
+		}
+
+		if checkTTL(metadata, time.Now()) {
+			return ErrExpiredTTL
+		}
+
+		return nil
 	})
 	return metadata, err
 }
@@ -156,4 +168,13 @@ func (db *KeyDB) Get(keyAddress string) (*models.AddressMetadata, error) {
 // Close closed down the db, and releases the lock on the db file
 func (db *KeyDB) Close() {
 	db.db.Close()
+}
+
+func checkTTL(metadata *models.AddressMetadata, now time.Time) bool {
+	ttl := metadata.GetPayload().GetTTL()
+	// One month default
+	if ttl == 0 {
+		ttl = 2592000
+	}
+	return metadata.GetPayload().GetTimestamp()+ttl < now.Unix()
 }

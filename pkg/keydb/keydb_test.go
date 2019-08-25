@@ -33,7 +33,7 @@ func TestAddressSignVerify(t *testing.T) {
 	assert.True(valid)
 }
 
-func TestSetGet(t *testing.T) {
+func TestSetGetTTL(t *testing.T) {
 	assert := assert.New(t)
 
 	// Setup a DB
@@ -48,18 +48,10 @@ func TestSetGet(t *testing.T) {
 	keyDb, err := New(cfg)
 	assert.Nil(err)
 
-	// Generate a privkey
-	privKey, err := bchec.NewPrivateKey(bchec.S256())
-	assert.Nil(err)
-	pubkey := privKey.PubKey()
-	// Find the address (Note: legacy atm)
-	addr, err := bchutil.NewAddressPubKeyHash(bchutil.Hash160(pubkey.SerializeUncompressed()), &chaincfg.MainNetParams)
-	assert.Nil(err)
-
-	addrMetadata := &models.AddressMetadata{
-		PubKey: pubkey.SerializeUncompressed(),
+	addr, addrMetadata := GeneratePayload(assert, &models.AddressMetadata{
 		Payload: &models.Payload{
-			Timestamp: time.Now().Unix(),
+			Timestamp: time.Now().Add(-2 * time.Second).Unix(),
+			TTL:       1,
 			Rows: []*models.MetadataField{
 				&models.MetadataField{
 					Headers: []*models.Header{
@@ -72,7 +64,37 @@ func TestSetGet(t *testing.T) {
 				},
 			},
 		},
-	}
+	})
+
+	err = keyDb.Set(addr.EncodeAddress(), addrMetadata)
+	assert.Equal(ErrExpiredTTL, err)
+
+	addrMetadata.Payload.Timestamp = time.Now().Unix()
+	addrMetadata.Payload.TTL = 1
+
+	addr, addrMetadata = GeneratePayload(assert, addrMetadata)
+	err = keyDb.Set(addr.EncodeAddress(), addrMetadata)
+	assert.Nil(err)
+	fetchedMetadata, err := keyDb.Get(addr.EncodeAddress())
+	assert.True(proto.Equal(addrMetadata, fetchedMetadata), "Fetch value did not match expected value")
+
+	// Check TTL failure
+	time.Sleep(2 * time.Second)
+	fetchedMetadata, err = keyDb.Get(addr.EncodeAddress())
+	assert.Equal(ErrExpiredTTL, err)
+}
+
+func GeneratePayload(assert *assert.Assertions, addrMetadata *models.AddressMetadata) (*bchutil.AddressPubKeyHash, *models.AddressMetadata) {
+	// Generate a privkey
+	privKey, err := bchec.NewPrivateKey(bchec.S256())
+	assert.Nil(err)
+	pubkey := privKey.PubKey()
+	// Find the address (Note: legacy atm)
+	addr, err := bchutil.NewAddressPubKeyHash(bchutil.Hash160(pubkey.SerializeUncompressed()), &chaincfg.MainNetParams)
+	assert.Nil(err)
+	// Set the pubkey we generated
+	addrMetadata.PubKey = pubkey.SerializeUncompressed()
+
 	rawMetadata, err := proto.Marshal(addrMetadata.GetPayload())
 	assert.Nil(err)
 
@@ -81,9 +103,5 @@ func TestSetGet(t *testing.T) {
 	assert.Nil(err)
 	addrMetadata.Signature = sig.Serialize()
 
-	err = keyDb.Set(addr.EncodeAddress(), addrMetadata)
-	assert.Nil(err)
-	fetchedMetadata, err := keyDb.Get(addr.EncodeAddress())
-	assert.Nil(err)
-	assert.True(proto.Equal(addrMetadata, fetchedMetadata), "Fetch value did not match expected value")
+	return addr, addrMetadata
 }
