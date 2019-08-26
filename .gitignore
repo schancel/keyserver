@@ -10,6 +10,8 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+k8s/
+vendor/
 
 .DS_Store
 
