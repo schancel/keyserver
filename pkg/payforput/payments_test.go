@@ -36,6 +36,7 @@ func TestEnforcer(t *testing.T) {
 	///////
 	// Check that we are required to pay after a naked PUT
 	assert.Equal(http.StatusPaymentRequired, response.Code, "StatusPaymentRequired response is expected")
+	assert.Equal("application/bitcoincash-paymentrequest", response.Header().Get("Content-Type"), "Invalid content type.")
 	payRequest := &models.PaymentRequest{}
 	err = proto.Unmarshal(response.Body.Bytes(), payRequest)
 	assert.Nil(err)
@@ -71,8 +72,8 @@ func TestEnforcer(t *testing.T) {
 	// Check that payment url gives us back a payment ack, and a token
 	request, err = http.NewRequest("POST", payDetails.GetPaymentUrl(), payBody)
 	assert.Nil(err)
-	request.Header.Add("Content-Type", "application/bitcoin-payment")
-	request.Header.Add("Accept", "application/bitcoin-paymentack")
+	request.Header.Add("Content-Type", "application/bitcoincash-payment")
+	request.Header.Add("Accept", "application/bitcoincash-paymentack")
 	response = httptest.NewRecorder()
 	enforcer.PaymentHandler(response, request)
 	assert.Equal(http.StatusFound, response.Code, "StatusFound response is expected")
