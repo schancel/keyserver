@@ -77,12 +77,12 @@ func (e *PaymentEnforcer) PaymentHandler(w http.ResponseWriter,
 
 	// Check BIP70 headers
 	contentType := r.Header.Get("Content-Type")
-	if contentType != "application/bitcoin-payment" {
+	if contentType != "application/bitcoincash-payment" {
 		http.Error(w, "invalid content type", http.StatusUnsupportedMediaType)
 		return
 	}
 	acceptHeader := r.Header.Get("Accept")
-	if acceptHeader != "application/bitcoin-paymentack" {
+	if acceptHeader != "application/bitcoincash-paymentack" {
 		http.Error(w, "invalid content type", http.StatusNotAcceptable)
 		return
 	}
@@ -205,6 +205,8 @@ func (e *PaymentEnforcer) Middleware(prevHandler http.Handler) http.Handler {
 		}
 
 		// Send the payment request
+                w.Header().Set("Content-Type", "application/bitcoincash-paymentrequest")
+                w.Header().Set("Content-Transfer-Encoding", "binary")
 		w.WriteHeader(http.StatusPaymentRequired)
 		w.Write(resp)
 	})
