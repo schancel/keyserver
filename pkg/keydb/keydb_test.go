@@ -51,7 +51,7 @@ func TestSetGetTTL(t *testing.T) {
 	addr, addrMetadata := GeneratePayload(assert, &models.AddressMetadata{
 		Payload: &models.Payload{
 			Timestamp: time.Now().Add(-2 * time.Second).Unix(),
-			TTL:       1,
+			Ttl:       1,
 			Rows: []*models.MetadataField{
 				&models.MetadataField{
 					Headers: []*models.Header{
@@ -70,7 +70,7 @@ func TestSetGetTTL(t *testing.T) {
 	assert.Equal(ErrExpiredTTL, err)
 
 	addrMetadata.Payload.Timestamp = time.Now().Unix()
-	addrMetadata.Payload.TTL = 1
+	addrMetadata.Payload.Ttl = 1
 
 	addr, addrMetadata = GeneratePayload(assert, addrMetadata)
 	err = keyDb.Set(addr.EncodeAddress(), addrMetadata)
