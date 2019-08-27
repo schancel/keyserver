@@ -52,15 +52,16 @@ func TestSetGetTTL(t *testing.T) {
 		Payload: &models.Payload{
 			Timestamp: time.Now().Add(-2 * time.Second).Unix(),
 			Ttl:       1,
-			Rows: []*models.MetadataField{
-				&models.MetadataField{
+			Entries: []*models.Entry{
+				&models.Entry{
+					Kind: "EgoBoost",
 					Headers: []*models.Header{
 						&models.Header{
-							Name:  "Type",
-							Value: "EgoBoost",
+							Name:  "Junk",
+							Value: "Data",
 						},
 					},
-					Metadata: []byte("Shammah has such great ideas... or something"),
+					EntryData: []byte("Shammah has such great ideas... or something"),
 				},
 			},
 		},
