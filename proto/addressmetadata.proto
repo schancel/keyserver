@@ -9,10 +9,12 @@ message Header {
 
 // MetadataField is an indidual piece of structured data provided by wallet authors.
 message MetadataField {
+    // Kind is a hint to wallets as to what type of data to deserialize from the metadata field.
+    string kind = 1;
     // The headers help wallets determine how to deserialize the data.
-    repeated Header headers = 1;
+    repeated Header headers = 2;
     // Body of the metadata field.
-    bytes metadata = 2;
+    bytes metadata = 3;
 }
 
 // Payload is the user-specified data section of a AddressMetadata that is covered by the users signature.
