@@ -31,15 +31,16 @@ func TestSetKey(t *testing.T) {
 		PubKey: pubkey.SerializeUncompressed(),
 		Payload: &models.Payload{
 			Timestamp: time.Now().Unix(),
-			Rows: []*models.MetadataField{
-				&models.MetadataField{
+			Entries: []*models.Entry{
+				&models.Entry{
+					Kind: "EgoBoost",
 					Headers: []*models.Header{
 						&models.Header{
-							Name:  "Type",
-							Value: "EgoBoost",
+							Name:  "Junk",
+							Value: "Data",
 						},
 					},
-					Metadata: []byte("Shammah has such great ideas... or something"),
+					EntryData: []byte("Shammah has such great ideas... or something"),
 				},
 			},
 		},
@@ -79,15 +80,16 @@ func TestGetKey(t *testing.T) {
 		PubKey: pubkey.SerializeUncompressed(),
 		Payload: &models.Payload{
 			Timestamp: time.Now().Unix(),
-			Rows: []*models.MetadataField{
-				&models.MetadataField{
+			Entries: []*models.Entry{
+				&models.Entry{
+					Kind: "EgoBoost",
 					Headers: []*models.Header{
 						&models.Header{
-							Name:  "Type",
-							Value: "EgoBoost",
+							Name:  "Junk",
+							Value: "Data",
 						},
 					},
-					Metadata: []byte("Shammah has such great ideas... or something"),
+					EntryData: []byte("Shammah has such great ideas... or something"),
 				},
 			},
 		},
