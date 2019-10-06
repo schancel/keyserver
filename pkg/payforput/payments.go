@@ -205,8 +205,8 @@ func (e *PaymentEnforcer) Middleware(prevHandler http.Handler) http.Handler {
 		}
 
 		// Send the payment request
-                w.Header().Set("Content-Type", "application/bitcoincash-paymentrequest")
-                w.Header().Set("Content-Transfer-Encoding", "binary")
+		w.Header().Set("Content-Type", "application/bitcoincash-paymentrequest")
+		w.Header().Set("Content-Transfer-Encoding", "binary")
 		w.WriteHeader(http.StatusPaymentRequired)
 		w.Write(resp)
 	})

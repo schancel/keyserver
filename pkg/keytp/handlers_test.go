@@ -32,10 +32,10 @@ func TestSetKey(t *testing.T) {
 		Payload: &models.Payload{
 			Timestamp: time.Now().Unix(),
 			Entries: []*models.Entry{
-				&models.Entry{
+				{
 					Kind: "EgoBoost",
 					Headers: []*models.Header{
-						&models.Header{
+						{
 							Name:  "Junk",
 							Value: "Data",
 						},
@@ -81,10 +81,10 @@ func TestGetKey(t *testing.T) {
 		Payload: &models.Payload{
 			Timestamp: time.Now().Unix(),
 			Entries: []*models.Entry{
-				&models.Entry{
+				{
 					Kind: "EgoBoost",
 					Headers: []*models.Header{
-						&models.Header{
+						{
 							Name:  "Junk",
 							Value: "Data",
 						},

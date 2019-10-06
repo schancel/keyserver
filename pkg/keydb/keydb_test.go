@@ -53,10 +53,10 @@ func TestSetGetTTL(t *testing.T) {
 			Timestamp: time.Now().Add(-2 * time.Second).Unix(),
 			Ttl:       1,
 			Entries: []*models.Entry{
-				&models.Entry{
+				{
 					Kind: "EgoBoost",
 					Headers: []*models.Header{
-						&models.Header{
+						{
 							Name:  "Junk",
 							Value: "Data",
 						},
